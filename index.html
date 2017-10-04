@@ -77,6 +77,13 @@
             max-height: 400px;
         }
 
+        .message_break {
+            max-width: 80%;
+            margin: 0 auto;
+            height: 6px;
+            border-radius: 3px;
+        }
+
     </style>
 
 </head>
@@ -281,11 +288,15 @@
             messages_div.append("<p class='pink-text center'>Be the first one to start the conversation!</p>");
         }
 
+        // marks the time the immediately precending message was sent
+        previous_message_send_time = null;
+
         for (var key in message) {
 
             var message_info = {};
 
             var time_relative = message[key]['ts'] == null ? "" : message[key]['ts'];
+            current_message_send_time = moment(time_relative);
             time_relative = moment(time_relative).fromNow();
 
             var who = message[key]['dn'] == null ? "Anonymous" : message[key]['dn'];
@@ -299,6 +310,16 @@
             var link = message[key]['link'];
             link = link == null ? "" : link;
             message_info['link'] = link;
+
+            // compare relative time between the previous message and the current message being sent
+            // useful for differentiating separate conversations over several days/weeks
+            if (previous_message_send_time !== null) {
+                if (current_message_send_time.diff(previous_message_send_time, 'hours') >= 6) {
+                    messages_div.append("<div class='pink message_break'></div>");
+                }
+            }
+
+            previous_message_send_time = current_message_send_time;
 
 
             var html_to_add = get_html_for_dom(message_info);
